@@ -1,3 +1,4 @@
+import 'package:exp/home/appDrawer.dart';
 import 'package:exp/home/homePage.dart';
 import 'package:exp/news/newsPage.dart';
 import 'package:exp/noti/notiPage.dart';
@@ -43,6 +44,7 @@ class _FirstPageState extends State<FirstPage> {
         title: Text('${titlePage}'),
       ),
       extendBody: true,
+      drawer: AppDrawer(),
       body: SafeArea(
         child: PageStorage(bucket: bucket, child: curentPage),
       ),
