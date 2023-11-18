@@ -1,10 +1,10 @@
 import 'package:exp/AlertDialogYesNo.dart';
 import 'package:exp/home/firstPage.dart';
-import 'package:exp/home/homePage.dart';
 import 'package:exp/login/widgets/inputTxtForm.dart';
 import 'package:exp/register/registerPage.dart';
 import 'package:exp/services/serviceApi.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,6 +17,23 @@ class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
   final TextEditingController username = TextEditingController();
   final TextEditingController password = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    checkLogin();
+  }
+
+  checkLogin() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token != null && token != '') {
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => FirstPage()), (route) => false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -81,10 +98,8 @@ class _LoginPageState extends State<LoginPage> {
                     try {
                       final _login = await ServiceApi.login(username: username.text, password: password.text);
                       if (_login != null) {
-
                         if (!mounted) return;
                         Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => FirstPage()), (route) => false);
-                        
                       } else {}
                     } on Exception catch (e) {
                       if (!mounted) return;

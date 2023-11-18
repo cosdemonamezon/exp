@@ -1,4 +1,9 @@
+import 'dart:developer';
+
+import 'package:exp/AlertDialogYesNo.dart';
 import 'package:exp/login/widgets/inputTxtForm.dart';
+import 'package:exp/models/user.dart';
+import 'package:exp/services/serviceApi.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -13,6 +18,67 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController name = TextEditingController();
   final TextEditingController email = TextEditingController();
   final TextEditingController tel = TextEditingController();
+  User? profile;
+
+  @override
+  void initState() {
+    super.initState();
+    getProfile();
+  }
+
+  getProfile() async {
+    User? data;
+    try {
+      data = await ServiceApi.profile();
+      setState(() {
+        profile = data;
+      });
+    } on Exception catch (e) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialogYes(
+          title: 'Error:',
+          description: '${e}',
+          pressYes: () {
+            Navigator.pop(context, true);
+          },
+        ),
+      );
+    }
+  }
+
+  editProfile() async {
+    try {
+      final message = await ServiceApi.updateProfile(profile!.id.toString(), name.text, email.text, tel.text);
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialogYes(
+          title: 'Successful',
+          description: message,
+          pressYes: () {
+            Navigator.pop(context, true);
+          },
+        ),
+      );
+    } on Exception catch (e) {
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialogYes(
+          title: 'Error:',
+          description: '${e}',
+          pressYes: () {
+            Navigator.pop(context, true);
+          },
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +101,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   padding: const EdgeInsets.all(8.0),
                   child: InpuTextForm(
                     controller: name,
-                    hintText: 'ชื่อ',
+                    hintText: profile?.name,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'กรุณากรอกชื่อ';
@@ -51,7 +117,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   padding: const EdgeInsets.all(8.0),
                   child: InpuTextForm(
                     controller: email,
-                    hintText: 'อีเมล',
+                    hintText: profile?.email,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'กรุณากรอกอีเมล';
@@ -67,7 +133,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   padding: const EdgeInsets.all(8.0),
                   child: InpuTextForm(
                     controller: tel,
-                    hintText: 'เบอร์โทร',
+                    hintText: profile?.tel,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'กรุณากรอกเบอร์โทร';
@@ -86,12 +152,15 @@ class _ProfilePageState extends State<ProfilePage> {
                     }
                     //Navigator.push(context, MaterialPageRoute(builder: (context) => FirstPage()));
                   },
-                  child: Container(
-                    height: size.height * 0.06,
-                    width: double.infinity,
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.amber),
-                    child: Center(
-                      child: Text('แก้ใข'),
+                  child: GestureDetector(
+                    onTap: () => editProfile(),
+                    child: Container(
+                      height: size.height * 0.06,
+                      width: double.infinity,
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.amber),
+                      child: Center(
+                        child: Text('แก้ใข'),
+                      ),
                     ),
                   ),
                 ),
